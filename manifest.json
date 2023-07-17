@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "CZLChat插件",
+  "version": "1.2",
+  "permissions": ["contextMenus","tabs","windows"],
+  "description": "该插件允许用户通过右键点击选中的文本，在菜单中直接选择操作，然后打开新的小窗口进行CZLChat使用。可进行询问选中项、写作和生成思维导图等功能。",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "background": {
+      "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://*.czl.net/*"
+  ],
+  "action": {
+      "default_icon": "icon128.png",
+      "default_popup": "popup.html"
+  }
+}
