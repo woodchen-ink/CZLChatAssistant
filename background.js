@@ -1,30 +1,18 @@
 let currentWindowId;
 let currentTabId;
 
-chrome.runtime.onInstalled.addListener(function () {
+function createContextMenu() {
   var contexts = ['selection'];
   for (let i = 0; i < contexts.length; i++) {
     let context = contexts[i];
-    var title1 = "🤔询问选中项";
-    chrome.contextMenus.create({
-      "title": title1,
-      "contexts": [context],
-      "id": 'ask'
-    });
-    var title3 = "✍️进行写作";
-    chrome.contextMenus.create({
-      "title": title3,
-      "contexts": [context],
-      "id": 'write'
-    });
-    var title4 = "📊生成思维导图";
-    chrome.contextMenus.create({
-      "title": title4,
-      "contexts": [context],
-      "id": 'mind-map'
-    });
+    chrome.contextMenus.create({ "title": "🤔询问", "contexts": [context], "id": 'ask' });
+    chrome.contextMenus.create({ "title": "✍️写作", "contexts": [context], "id": 'write' });
+    chrome.contextMenus.create({ "title": "📊思维导图", "contexts": [context], "id": 'mind-map' });
   }
-});
+}
+
+chrome.runtime.onInstalled.addListener(createContextMenu);
+chrome.runtime.onStartup.addListener(createContextMenu);
 
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
   let id = info.menuItemId;
@@ -32,43 +20,25 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
   let url;
   switch (id) {
     case 'ask':
-      url = `https://chat.czl.net/chat?prompt=${selectionText}&send=1`;
+      url = `https://chat.czl.net/chat?send=1&prompt=${encodeURIComponent(selectionText)}`;
       break;
     case 'write':
-      url = `https://chat.czl.net/writing?prompt=${selectionText}`;
+      url = `https://chat.czl.net/writing?prompt=${encodeURIComponent(selectionText)}`;
       break;
     case 'mind-map':
-      url = `https://chat.czl.net/mind-map?prompt=${selectionText}`;
+      url = `https://chat.czl.net/mind-map?prompt=${encodeURIComponent(selectionText)}`;
       break;
   }
 
-  if (currentWindowId) {
-    chrome.tabs.update(currentTabId, { url: url }).then(() => {
-      chrome.windows.update(currentWindowId, { focused: true });
-    });
-  } else {
-    chrome.windows.create({
-      url: url,
-      type: 'popup',
-      width: 1080,
-      height: 824,
-      left: 100,
-      top: 100
-    }).then((window) => {
-      currentWindowId = window.id;
-      currentTabId = window.tabs[0].id;
-      chrome.windows.update(currentWindowId, { focused: true });
-    });
-  }
+  openTab(url);
 });
 
 chrome.action.onClicked.addListener(function (tab) {
-  var url = 'https://chat.czl.net';
-  if (currentWindowId) {
-    chrome.tabs.update(currentTabId, { url: url }).then(() => {
-      chrome.windows.update(currentWindowId, { focused: true });
-    });
-  } else {
+  openTab('https://chat.czl.net');
+});
+
+function openTab(url) {
+  if (currentWindowId === undefined) {
     chrome.windows.create({
       url: url,
       type: 'popup',
@@ -76,10 +46,36 @@ chrome.action.onClicked.addListener(function (tab) {
       height: 824,
       left: 100,
       top: 100
-    }).then((window) => {
+    }, function(window) {
       currentWindowId = window.id;
       currentTabId = window.tabs[0].id;
-      chrome.windows.update(currentWindowId, { focused: true });
+    });
+  } else {
+    chrome.windows.get(currentWindowId, function(window) {
+      if (chrome.runtime.lastError || !window) {
+        chrome.windows.create({
+          url: url,
+          type: 'popup',
+          width: 1080,
+          height: 824,
+          left: 100,
+          top: 100
+        }, function(window) {
+          currentWindowId = window.id;
+          currentTabId = window.tabs[0].id;
+        });
+      } else {
+        chrome.tabs.get(currentTabId, function(tab) {
+          if (chrome.runtime.lastError || !tab) {
+            chrome.tabs.create({ windowId: currentWindowId, url: url }, function(tab) {
+              currentTabId = tab.id;
+            });
+          } else {
+            chrome.tabs.update(currentTabId, { url: url });
+          }
+          chrome.windows.update(currentWindowId, { focused: true });
+        });
+      }
     });
   }
-});
+}
