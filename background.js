@@ -23,10 +23,10 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
       url = `https://chat.czl.net/chat?send=1&prompt=${encodeURIComponent(selectionText)}`;
       break;
     case 'write':
-      url = `https://chat.czl.net/writing?prompt=${encodeURIComponent(selectionText)}`;
+      url = `https://chat.czl.net/writing?send=1&prompt=${encodeURIComponent(selectionText)}`;
       break;
     case 'mind-map':
-      url = `https://chat.czl.net/mind-map?prompt=${encodeURIComponent(selectionText)}`;
+      url = `https://chat.czl.net/mind-map?send=1&prompt=${encodeURIComponent(selectionText)}`;
       break;
   }
 

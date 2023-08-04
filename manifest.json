@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "CZLChat插件",
-  "version": "1.1",
+  "version": "1.2",
+  "default_locale": "zh-CN",
   "permissions": ["contextMenus"],
   "description": "CZLChat插件可以帮助你快速地处理文本询问AI内容，免去手动复制的麻烦。可进行询问选中项、写作和生成思维导图等功能。",
   "icons": {
